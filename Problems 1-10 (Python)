@@ -1,0 +1,192 @@
+#Problem 1:  Find the sum of all the multiples of 3 or 5 below 1000.
+
+total = 0
+
+for n in range(1001):
+    if n % 3 == 0 or n % 5 == 0:
+        total += n
+        
+total
+
+"""
+Problem 2:  By considering the terms in the Fibonacci sequence whose values do not exceed four million, find the sum of
+the even-valued terms.
+"""
+import math
+
+def fib2(n):
+    if n == 0:
+        return 0
+    elif n == 1:
+        return 2
+    else:
+        #Easily proven by induction that every third Fibonacci number is even and so the recursion easily follows
+        return 4 * fib2(n - 1) + fib2(n - 2)
+    
+total = 0
+n = 0
+    
+while fib2(n) < 4 * 10 ** 6:
+        total += fib2(n)
+        n += 1
+
+print(total)
+
+#Problem 3:  What is the largest prime factor of the number 600851475143 ?
+d = 3
+n = 600851475143
+
+while d ** 2 < n:
+    if 600851475143 % d == 0:
+        n = n // d
+    d += 2
+
+print(n)
+
+#Problem 4:  Find the largest palindrome made from the product of two 3-digit numbers
+
+def digitList(n):
+    digs = [n % 10]
+    n = n // 10
+
+    while n > 0:
+        digs.append(n % 10)
+        n = n // 10
+    return digs
+
+def digitReverse(num):
+    digit_list = digitList(num)
+    length = len(digit_list)
+    n = 0
+    
+    for i in range(length):
+        n += digit_list[i] * 10 ** (length - i - 1)
+    return n
+
+fac1 = 1
+fac2 = 2
+M = 1
+
+for a in range(100, 1000):
+    for b in range(100, 1000):
+        if digitReverse(a * b) == a * b and a * b > M:
+            fac1 = a
+            fac2 = b
+            M = a * b
+
+print(fac1, fac2, M)
+
+#Problem 5:  What is the smallest positive number that is evenly divisible by all of the numbers from 1 to 20?
+
+print(2 ** 4 * 3 ** 2 * 5 * 7 * 11 * 13 * 17 * 19)
+
+"""
+Problem 6:  Find the difference between the sum of the squares of the first one hundred natural numbers and
+the square of the sum.
+"""
+sqsum = 0
+sumsq = 0
+
+for k in range(101):
+    sqsum += k ** 2
+
+for j in range(101):
+    sumsq += j
+
+print(sumsq ** 2 - sqsum)
+
+#Problem 7:  What is the 10 001st prime number?
+
+counter = 0
+prime = 2
+n = 2
+
+def isPrime(k):
+    if k < 4:
+        return True
+    if k % 2 == 0 or k % 3 == 0:
+        return False
+    if k < 9:
+        return True
+    else:
+        j = 5
+    while j <= int(k ** 0.5):
+        if k % j == 0 or k % (j + 2) == 0:
+            return False
+        j += 6
+    return True
+
+while(counter < 10001):
+    if isPrime(n):
+        counter += 1
+        prime = n
+    n += 1
+
+print(prime)
+
+"""
+Problem 8:  Find the thirteen adjacent digits in the 1000-digit number that have the greatest product.
+What is the value of this product?
+"""
+
+n = 7316717653133062491922511967442657474235534919493496983520312774506326239578318016984801869478851843858615607891129494954595017379583319528532088055111254069874715852386305071569329096329522744304355766896648950445244523161731856403098711121722383113622298934233803081353362766142828064444866452387493035890729629049156044077239071381051585930796086670172427121883998797908792274921901699720888093776657273330010533678812202354218097512545405947522435258490771167055601360483958644670632441572215539753697817977846174064955149290862569321978468622482839722413756570560574902614079729686524145351004748216637048440319989000889524345065854122758866688116427171479924442928230863465674813919123162824586178664583591245665294765456828489128831426076900422421902267105562632111110937054421750694165896040807198403850962455444362981230987879927244284909188845801561660979191338754992005240636899125607176060588611646710940507754100225698315520005593572972571636269561882670428252483600823257530420752963450
+M = 1
+
+def product13(k, start):
+    digs = digitList(k)
+    num = 1
+    for i in range(start, start + 13):
+        num *= digs[i]
+    return num
+
+for i in range(1000 - 13):
+    if product13(n, i) > M:
+        M = product13(n, i)
+
+#This function was used in an older solution, but still seems useful so I've left it in
+#def digitForward(n):
+#    fwd = [str(x) for x in digitList(n)]
+#    fwd.reverse()
+#    fwd = [int(x) for x in fwd]
+#    return fwd
+
+print(M)
+
+#Problem 9:  There exists exactly one Pythagorean triplet for which a + b + c = 1000. Find the product abc.
+
+from math import sqrt
+
+a = 3
+b = 4
+c = 5
+
+triple = [a, b, c]
+
+for m in range(32):
+    for n in range(32):
+        a = m ** 2 - n ** 2
+        b = 2 * m * n
+        c = m ** 2 + n ** 2
+        if a + b + c == 1000:
+            triple[0] = a
+            triple[1] = b
+            triple[2] = c
+
+def product(nums):
+    long = len(nums)
+    prod = 1
+    for i in range(long):
+        prod *= nums[i]
+    return prod
+
+print(product(triple))
+
+#Problem 10:  Find the sum of all the primes below two million
+
+total = 0
+
+for x in range(2 * 10 ** 6):
+    if isPrime(x):
+        total += x
+
+print(total)
