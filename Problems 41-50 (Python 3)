@@ -1,0 +1,306 @@
+#Problem 41: What is the largest n-digit pandigital prime that exists?
+
+from numtheory import digits, SieveOfAtkin
+from math import factorial
+
+# Observe 2, 3, 5, 6, 8, 9 digits all impossible since those digits add to a multiple of 3
+# This observation alone cuts our searches down from 9 * 9! (approx 3 million) to about 35 thousand
+# Further ending digits cannot be even or 5, which cuts options down as well
+
+def main():
+    primes = SieveOfAtkin(7654321).getPrimes()
+    primes7 = [p for p in primes if set(digits(p)) == set(range(1, 8))]
+    return max(primes7)
+
+# Observe there is no guarantee there is a 7-digit answer, but were this to return 0, I would just change to 4
+
+main()
+
+# Problem 42: How many words in the file p042_words.txt have word value a triangular number?
+
+from math import sqrt
+
+def score(word):
+    dictionary = {'"': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8, 'I': 9, 'J': 10,
+'K': 11, 'L': 12, 'M': 13, 'N': 14, 'O': 15, 'P': 16, 'Q': 17, 'R': 18, 'S': 19, 'T': 20, 'U': 21, 'V': 22,
+'W': 23, 'X': 24, 'Y': 25, 'Z': 26}
+    
+    scores = [dictionary[x] for x in list(word)]
+    
+    return sum(scores)
+
+def max_score(file):
+    with open(file, "r") as fh:
+        string = fh.read()
+    string = string.split(",")
+    M = 0
+    for word in string:
+        if score(word) > M:
+            M = score(word)
+    return M
+
+def triangles(limit): #gives all the triangular numbers up to limit
+    lim = int((-1 + sqrt(1 + 8 * limit)) / 2) + 1 #comes from the quadratic formula for n^2 + n <= 2*limit
+    tri = [n * (n + 1) // 2 for n in range(1, lim)]
+    
+    return tri
+
+def main(file):
+    tri = triangles(max_score(file)) #all possible triangular numbers in the range of scores
+    count = 0
+    
+    with open(file, "r") as fh:
+        string = fh.read()
+    words = string.split(",")
+    
+    for word in words:
+        if score(word) in tri:
+            count += 1
+    return count
+
+main("./Files/p042_words.txt")
+
+"""
+Problem 43: The number, 1406357289, is a 0-9 pandigital number with a rather interesting sub-string divisibility
+property. Let dk be the kth digit, then:
+
+    d2d3d4=406 is divisible by 2
+    d3d4d5=063 is divisible by 3
+    d4d5d6=635 is divisible by 5
+    d5d6d7=357 is divisible by 7
+    d6d7d8=572 is divisible by 11
+    d7d8d9=728 is divisible by 13
+    d8d9d10=289 is divisible by 17
+
+Find the sum of all 0 to 9 pandigital numbers with this property.
+
+"""
+
+from functools import reduce
+from itertools import permutations
+from math import factorial
+
+# Observe d6 in {0,5} d4 in {0,2,4,6,8} d3 = d4 = d5 mod 3 or one opposite of the other and one 0 mod 3
+
+def zipper(perm):
+    return reduce(lambda base, d: base * 10 + d, perm)
+
+def main():
+    possibilities = list(permutations(range(10)))[factorial(9):]
+    possibilities = [p for p in possibilities if p[3] % 2 == 0 and p[5] % 5 == 0 and
+(p[2] + p[3] + p[4]) % 3 == 0]
+    
+    total = 0
+    
+    for perm in possibilities:
+        if zipper(perm[4:7]) % 7 != 0:
+            continue
+        if zipper(perm[5:8]) % 11 != 0:
+            continue
+        if zipper(perm[6:9]) % 13 != 0:
+            continue
+        if zipper(perm[7:10]) % 17 != 0:
+            continue
+        total += zipper(perm)
+    return total
+
+from time import time
+
+t0 = time()
+main()
+t1 = time()
+
+print("Solution is {} and takes {}s".format(main(), t1 - t0))
+
+# Problem 44: Find the minimum value of |Pk − Pj| with Pi, Pj pentagonal and their sum/difference pentagonal
+
+from numtheory import poly
+
+# We note that (x+y) - y = x and (x+y)-2y = x-y
+
+def main():
+    num = 0
+    pents = set()
+    while True:
+        num += 1
+        _ = poly(num, 5)
+        pents.add(_)
+        
+        for j in pents:
+            if _ - j in pents and _ - 2 * j in pents: #i.e. the largest is the sum, so then look at y diffs
+                return _ - 2 * j
+
+main()
+
+
+from math import sqrt
+from numtheory import poly
+
+def poly(k, sides):
+    return (k ** 2 * (sides - 2) - k * (sides - 4)) >> 1
+
+#def is_pent(num):
+#    try:
+#        tmp = sqrt(1 + 24 * num)
+#        return tmp == int(tmp)
+#    except ValueError:
+#        raise Exception("Argument must be positive")
+
+def is_hex(num):
+    try:
+        tmp = sqrt(1 + (num << 3))
+        return int(tmp) == tmp and int(tmp) % 4 == 3  #1st condition sufficient for triangular, 2nd hexagonal
+    except ValueError:
+        raise Exception("Argument must be positive")
+
+#def args(num):  #Used in tests, but no longer needed
+#    if is_pent(num) and is_hex(num):
+#        disc1 = int(sqrt(1 + (num << 3)))  #discriminant for hexagonal and triangular numbers
+#        disc2 = int(sqrt(1 + 24 * num))
+#        return [(-1 + disc1) >> 1, int((1 + disc2) / 6), (1 + disc1) >> 2]  #quadratic formula
+#    else:
+#        raise Exception("Not hex and pent")
+
+def main():
+    hex_index = 165 # I tested none of those in [144, 165] were pentagonal
+    
+    while True:
+        hex_index += 1
+        for pent_index in range(hex_index + 1, int((hex_index << 1) / sqrt(3))):  #easily computable upper bound
+            _ = poly(pent_index, 5)
+            if not is_hex(_):
+                hex_index += 1
+                continue
+            else:
+                return _
+
+main()
+
+#Problem 46: What is the smallest odd composite that cannot be written as the sum of a prime and twice a square?
+
+from math import sqrt
+
+from numtheory import is_prime
+
+def condition(num, primes):
+    for p in primes:
+        try:
+            tmp = sqrt(num - p >> 1)
+            if tmp == int(tmp):
+                return True
+        except ValueError:
+            return False
+
+def main():
+    index = 1
+    primes = {2, 3, 5}
+    
+    while True:
+        index += 1
+        num = 2 * index + 1
+        
+        if is_prime(num): #no need to worry about prime cases
+            primes.add(num)
+            continue
+        if not condition(num, primes):
+            return num
+            break
+
+main()
+
+# Problem 47: Of the first four consecutive integers each with four distinct prime factors what is the smallest?
+
+from numtheory import factor
+
+def main():
+    count = 1
+    n = 2 * 3 * 5 * 7 # no point in starting lower
+    while count < 4:
+        n += 1
+        if len(factor(n)) == 4:
+            count += 1
+        else:
+            count = 0
+    return n - 3
+
+main()
+
+# Problem 48: Find the last ten digits of the series, 1^1 + 2^2 + 3^3 + ... + 1000^1000.
+
+def hyper_sum(lim):
+    return sum([k ** k % 10 ** 10 for k in range(1, lim + 1)]) % 10 ** 10
+
+hyper_sum(1000)
+
+"""
+Problem 49: Find the only other arithmetic sequence--besides 1487, 4817, 8147-- in which
+    (i) each of the three terms are prime
+    (ii) each of the 4-digit numbers are permutations of one another.
+
+What 12-digit number do you form by concatenating the three terms in this sequence?
+
+"""
+
+from numtheory import digits, is_prime
+from functools import reduce
+
+def condition(n1, n2, n3):
+    if not is_prime(n1):
+        return False
+    if not is_prime(n2):
+        return False
+    if not is_prime(n3):
+        return False
+    digs1, digs2, digs3 = digits(n1), digits(n2), digits(n3)
+    return set(digs1) == set(digs2) == set(digs3)
+
+def test(start):
+    max_ = (10000 - start) // 2 # how big a difference can be so all three numbers are four-digits
+    for n in range(1, max_):
+        res = [start, start + n, start + 2 * n]
+        if condition(res[0], res[1], res[2]):
+            return [True, res]
+    return [False]
+
+def main():
+    primes = SieveOfAtkin(10000).getPrimes()
+    primes = [p for p in primes if p > 1487]
+    for p in primes:
+        if test(p)[0]:
+            return int(reduce(lambda x, y: x + y, map(str, test(p)[1])))
+
+main()
+
+# Problem 50: Which prime, below one-million, can be written as the sum of the most consecutive primes?
+
+# Observe we can get all consecutive sum, and difference of terms in array are middle sums
+# That is to say:  the trick is sigma notation sum(f(i), i = m to n) is sum 0 to n minus sum 0 to m - 1
+
+from numtheory import SieveOfAtkin, is_prime
+
+def prime_sums(limit, primes):
+    sums = [0]
+    
+    for p in primes:
+        if sums[-1] <= limit:
+            sums.append(sums[-1] + p)
+        else:
+            break
+    return sums
+
+def longest(limit):
+    primes = SieveOfAtkin(limit).getPrimes()
+    sums = prime_sums(limit, primes)
+    len_ = len(sums)
+    mx = 1
+    pmax = 41
+    
+    for i in range(len_ - 1, -1, -1):
+        for j in range(i - 1):
+            num = sums[i] - sums[j]
+            if is_prime(num) and num < limit:
+                if i - j > mx:
+                    mx, pmax = i - j, num
+    return "The largest is {} with a length of {}".format(pmax, mx)
+
+longest(1000000)
