@@ -1,0 +1,28 @@
+"""
+Problem 51: Find the smallest prime which, by replacing part of the number (not necessarily adjacent digits)
+with the same digit, is part of an eight prime value family.
+
+"""
+
+from numtheory import digits, is_prime
+from functools import reduce
+from math import log10
+
+def zipper(digs):
+    digs.reverse()
+    return reduce(lambda x, y: 10 * x + y, digs)
+
+def replacer(n, indices, digit):  #replaces digits in indices with digit
+    order = int(log10(n)) + 1
+    if order < len(indices):
+        raise Exception("Too many replacements")
+    if order - 1 < max(indices):
+        raise Exception("Cannot replace such a large digit")
+    else:
+        digs = digits(n)
+        for d in indices:
+            digs[order - d] = digit
+    return zipper(digs)
+
+
+
