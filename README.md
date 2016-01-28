@@ -1,2 +1,2 @@
 # Project-Euler
-My solutions to Project Euler Problems
+My solutions to Project Euler Problems. I anticipate all will end up being Python 3 solutions for consistency, but just in case I note which language I use for each batch of 10 files. Originally they were in a Jupyter notebook with each problem in its own cell, so I haven't tested running them in concert, and do not recommend it. I made my own number theory library, that's what's referenced in a lot of the problems, and I'll put that in at some point maybe as well.
