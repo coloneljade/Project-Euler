@@ -1,0 +1,272 @@
+# Problem 21: Evaluate the sum of all the amicable numbers under 10000.
+
+from numtheory import isAmicable, isPerfect
+
+sum = 0
+
+for i in range(10001):
+    if isAmicable(i) and not isPerfect(i):
+        sum += i
+
+print(sum)
+
+"""
+Problem 22:  A name score for a name in the file p022_names.txt is defined as the sum of the numerical values of the letters
+within the name multiplied by the position of the name within the names list in the file.
+
+What is the total of all the name scores in the file after sorting the names alphabetically?
+
+"""
+
+with open("Files/p022_names.txt", 'r') as fh:
+    text = fh.read()
+
+text = text.split(",")
+
+text = [word[1:-1] for word in text]
+
+text.sort()  # Sort the names as per the problem
+
+alpha_num = {'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8, 'I': 9, 'J': 10, 'K': 11, 'L': 12, 'M': 13, 'N': 14, 'O': 15, 'P': 16, 'Q': 17, 'R': 18, 'S': 19, 'T': 20, 'U': 21, 'V': 22, 'W': 23, 'X': 24, 'Y': 25, 'Z': 26}
+
+total = 0
+
+for index in range(len(text)):
+    for char in text[index]:
+        total += (index + 1) * alpha_num[char]
+        
+print(total)
+
+"""
+Problem 23: By mathematical analysis, it can be shown that all integers greater than 28123 can be written as the
+sum of two abundant numbers. Find the sum of all the positive integers which cannot be written as the sum of two
+abundant numbers.
+
+"""
+
+from numtheory import isAbundant
+
+count = 0
+
+abundants = [num for num in range(28124) if isAbundant(num)]
+
+# Returns True iff n is the sum of two abundant numbers and False otherwise
+def is_sum_two(n):
+    checks = [k for k in abundants if k < n]
+    for k in checks:
+        if isAbundant(n - k):
+            return True
+    return False
+
+for i in range(21224):
+    if not is_sum_two(i):
+        count += i
+
+print(count)
+
+# Problem 24: What is the millionth lexicographic permutation of the digits 0, 1, 2, 3, 4, 5, 6, 7, 8 and 9?
+
+# I worked this out on paper, but here is how it works out in Python
+
+result = ""
+
+digs = [str(i) for i in range(10)]
+
+num = 10 ** 6 - 1
+
+for j in range(1, 11):
+    q = num // factorial(10 - j)
+    num -= q * factorial(10 - j)
+    result += digs.pop(q)
+    
+print(result)
+
+# Problem 25: What is the index of the first term in the Fibonacci sequence to contain 1000 digits?
+
+from math import sqrt, log
+
+phi = (1 + sqrt(5)) / 2
+
+print(int((1000 - 0.5 * log(5, 10))/ log(phi, 10)) - 1)
+
+
+# Problem 26:  Find the value of d < 1000 for which 1/d contains the longest recurring cycle in its decimal fraction part.
+
+from numtheory import numd, Euler_phi
+
+# Computes a maximum cycle check area (I know from number theory the cycle length is bounded by d-1)
+def cycle(d):
+    digs = list(iter(str(10 ** (d - 1) // d)))
+    return ['0'] * (d - len(digs) - 1) + digs
+
+# Eliminates trailing zeroes
+def cycle_cleaner(d):
+    _ = numd(d, 10)
+    d = d // 10 ** _
+    _ = cycle(d)
+    clip = numd(10 ** (d - 1) // d, 10)
+    return _[:-clip] if clip > 0 else cycle(d)
+
+def cycle_length(d):
+    min_cycle = 0
+    digs = cycle_cleaner(d)
+    size = len(digs)
+    order = Euler_phi(d)
+    for j in range(size // 2):
+        for k in range(1, size // 2 + 1):
+            try:
+                if (size - j) % k == 0:
+                    clip = digs[j: j + k]
+                    if digs[j:] == clip * ((size - j) // k):
+                        return k
+                else:
+                    pass
+            except IndexError:
+                pass
+    return min_cycle if min_cycle > 0 else size
+
+def max_cycle(limit):
+    M = 1
+    num = 2
+    
+    for d in range(1, limit + 1):
+        if cycle_length(d) > M:
+            M = cycle_length(d)
+            num = d
+    return num
+
+max_cycle(1000)
+
+"""
+Problem 27: Considering quadratics of the form:
+
+    n² + an + b, where |a| < 1000 and |b| < 1000
+
+Find the product of the coefficients, a and b, for the quadratic expression that produces the maximum number of primes for
+consecutive values of n, starting with n = 0.
+
+"""
+
+from numtheory import SieveOfAtkin
+
+def prime_length(limit):
+    primes = SieveOfAtkin(limit ** 2 + limit)
+    primes = primes.getPrimes()
+    primes = primes[:1000]
+    primes = [p for p in primes if p < 1000]
+    M = 0
+    b_max = 0
+    
+    for a in range(-limit, limit + 1):
+        for b in primes:
+            if b < 40:
+                continue
+            def poly(x):
+                return x ** 2 + a * x + b
+            count = 0
+            while(poly(count) in primes):
+                count += 1
+            if count > M:
+                M = count
+                a_max = a
+                b_max = b
+    return "Polynomial coefficients a = " + str(a_max) + " b = " + str(b_max) + " and their product is " + str(a_max * b_max) + " with a max length of " + str(M)
+
+print(prime_length(999))
+print(max(primes))
+
+"""
+Problem 28: Starting with the number 1 and moving to the right in a clockwise direction a 5 by 5 spiral is formed as follows:
+
+21 22 23 24 25
+20  7  8  9 10
+19  6  1  2 11
+18  5  4  3 12
+17 16 15 14 13
+
+It can be verified that the sum of the numbers on the diagonals is 101.
+
+What is the sum of the numbers on the diagonals in a 1001 by 1001 spiral formed in the same way?
+
+"""
+
+# This can pretty easily be done by induction and some elbow grease, but below is the programming solution
+
+def uRcorner(n):
+    return n ** 2
+
+def uLcorner(n):
+    return n ** 2 - n + 1
+
+def lLcorner(n):
+    return n ** 2 - 2 * n + 2
+
+def lRcorner(n):
+    return n ** 2 - 3 * n + 3
+
+def spiral_sum(n):
+    q = n // 2
+    count = 0
+    
+    if n % 2 == 0:
+        raise Exception("n must be an odd number") # Doing it for the odd spirals only
+
+    for k in range(q + 1):
+        count += uRcorner(2 * k + 1) + uLcorner(2 * k + 1) + lLcorner(2 * k + 1) + lRcorner(2 * k + 1)
+    
+    return count - 3 # initial value in the center which is not a corner
+
+spiral_sum(1001)
+
+# Problem 29: How many distinct terms are in the sequence generated by a ^ b for 2 ≤ a ≤ 100 and 2 ≤ b ≤ 100?
+
+def list_maker(a_lim, b_lim):
+    ls = []
+    
+    for a in range(2, a_lim + 1):
+        for b in range(a, b_lim + 1):
+            ls.extend([a ** b, b ** a])
+    ls = set(ls)
+    
+    return len(ls)
+
+list_maker(100, 100)
+
+# Problem 30: Find the sum of all the numbers that can be written as the sum of fifth powers of their digits.
+
+"""
+Note that if a_d, a_{d-1}, ..., a_0 are the digits of a number, a. Then a >= 10^d. We also know that the sum of the fifth
+powers of the digits is bounded by (d+1) * 9^5. Eventually 10^d > (d+1) * 9^5, so we need only find out when this occurs.
+
+Taking logs, we see that we need to find when the function f(d) = dlog(10) - log(d+1) - 5log(9) > 0. It has a positive
+derivative, so we simply compute some values and find that f(6) > 0, so we need search for at most 5 digits.
+
+"""
+
+from math import log
+
+def digits(n):
+    digs = []
+    dig = int(log(n, 10) + 1)
+    
+    for j in range(dig):
+        digs.append(n % 10)
+        n = n // 10
+    return digs
+
+def sum5(n):
+    digs = digits(n)
+    total = 0
+    size = len(digs)
+    for j in range(size):
+        total += digs[j] ** 5
+    return total
+
+count = 0
+
+for j in range(10, 10 ** 6 - 1):
+    if j == sum5(j):
+        count += j
+
+print(count)
+
